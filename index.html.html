@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 주간 학습 대시보드</title>
+<style>
+  :root{
+    --navy:#002D72; --red:#E81828; --bg:#f4f6fb; --card:#ffffff;
+    --ink:#16223b; --muted:#6b7689; --line:#e6e9f0; --good:#1d9e6a; --gold:#f5a623;
+    --shadow:0 6px 22px rgba(16,30,64,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+       background:linear-gradient(180deg,#eef2fb,#f6f8fc);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .hello h1{margin:0;font-size:26px;letter-spacing:-.5px}
+  .hello p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .streakbig{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--navy),#0a47a8);
+       color:#fff;padding:14px 20px;border-radius:16px;box-shadow:var(--shadow)}
+  .streakbig .num{font-size:40px;font-weight:800;line-height:1}
+  .streakbig .lab{font-size:12px;opacity:.85}
+  .flame{font-size:34px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+  .grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+  @media(max-width:880px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+  .card h2{margin:0 0 12px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .card h2 .pill{font-size:11px;font-weight:600;color:var(--muted);background:#f0f2f8;padding:3px 8px;border-radius:99px;margin-left:auto}
+  .task{display:flex;align-items:center;gap:12px;padding:12px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;
+        cursor:pointer;transition:.15s;background:#fff}
+  .task:hover{border-color:#c8d2ea;background:#fbfcff}
+  .task.done{background:#eafaf2;border-color:#bff0d8}
+  .task .box{width:26px;height:26px;border-radius:8px;border:2px solid #cfd6e6;display:flex;align-items:center;justify-content:center;
+        font-size:16px;color:#fff;flex:0 0 auto;transition:.15s}
+  .task.done .box{background:var(--good);border-color:var(--good)}
+  .task .emoji{font-size:20px}
+  .task .t{flex:1}
+  .task .t .name{font-weight:600;font-size:15px}
+  .task .t .sub{font-size:12px;color:var(--muted)}
+  .task.done .name{text-decoration:line-through;color:#5b6b58}
+  .progwrap{margin-top:6px}
+  .bar{height:10px;background:#eef1f7;border-radius:99px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#37c98a);width:0;transition:.4s}
+  .restday{text-align:center;padding:26px 10px}
+  .restday .big{font-size:30px}
+  .restday p{color:var(--muted)}
+  .mstones{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .ms{flex:1;min-width:70px;text-align:center;border:1px solid var(--line);border-radius:12px;padding:10px 6px;background:#fff}
+  .ms.hit{background:linear-gradient(135deg,#fff7e6,#ffeec2);border-color:#f4d795}
+  .ms .d{font-size:20px;font-weight:800}
+  .ms .l{font-size:10px;color:var(--muted)}
+  .ms.hit .d{color:var(--gold)}
+  .nextms{font-size:13px;color:var(--muted);margin-top:10px}
+  .wx{display:flex;align-items:center;gap:16px}
+  .wx .ico{font-size:52px}
+  .wx .temp{font-size:34px;font-weight:800}
+  .wx .meta{font-size:13px;color:var(--muted)}
+  .wxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .wxgrid div{background:#f6f8fc;border-radius:10px;padding:8px;text-align:center;font-size:12px}
+  .wxgrid b{display:block;font-size:15px;margin-top:2px}
+  .game{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .team{text-align:center;flex:1}
+  .team .ab{font-size:13px;color:var(--muted)}
+  .team .sc{font-size:34px;font-weight:800}
+  .gstatus{text-align:center;flex:0 0 auto;padding:0 6px}
+  .gstatus .badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#eef1f7;color:var(--muted)}
+  .gstatus .badge.live{background:var(--red);color:#fff;animation:pulse 1.4s infinite}
+  @keyframes pulse{50%{opacity:.55}}
+  .harper{margin-top:6px}
+  .statline{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;text-align:center}
+  .statline div{background:#f6f8fc;border-radius:10px;padding:9px 4px}
+  .statline .v{font-size:18px;font-weight:800}
+  .statline .k{font-size:10px;color:var(--muted);margin-top:2px}
+  .today-line{background:linear-gradient(135deg,#fbeaec,#fff);border:1px solid #f3c9cf;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:14px}
+  .muted{color:var(--muted);font-size:13px}
+  .loading{color:var(--muted);font-size:13px;padding:6px 0}
+  .err{color:#b23b3b;font-size:13px}
+  .hm{display:flex;flex-direction:column;gap:5px}
+  .hmrow{display:flex;gap:5px;align-items:center}
+  .hmrow .wk{font-size:10px;color:var(--muted);width:42px}
+  .cell{width:26px;height:26px;border-radius:7px;background:#eef1f7;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9aa6bd}
+  .cell.full{background:var(--good);color:#fff}
+  .cell.part{background:#bdeccf;color:#2c7a52}
+  .cell.rest{background:#e9ecf5;color:#9aa6bd}
+  .cell.today{outline:2px solid var(--navy);outline-offset:1px}
+  .hmhead{display:flex;gap:5px;margin-left:42px;margin-bottom:2px}
+  .hmhead span{width:26px;text-align:center;font-size:10px;color:var(--muted)}
+  .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px}
+  .btn:hover{background:#f6f8fc}
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+  .modal{position:fixed;inset:0;background:rgba(10,20,45,.55);display:none;align-items:center;justify-content:center;z-index:70}
+  .modal.show{display:flex}
+  .modalbox{background:#fff;border-radius:20px;padding:30px 34px;text-align:center;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .4s}
+  @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+  .modalbox .em{font-size:60px}
+  .modalbox h3{margin:8px 0 4px;font-size:22px}
+  .modalbox p{color:var(--muted);margin:0 0 16px}
+  .modalbox .btn.go{background:var(--navy);color:#fff;border-color:var(--navy);padding:10px 22px;font-weight:700}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+  <header class="top">
+    <div class="hello">
+      <h1 id="greet">안녕하세요 👋</h1>
+      <p id="datestr"></p>
+    </div>
+    <div class="streakbig">
+      <span class="flame">🔥</span>
+      <div>
+        <div class="num" id="streakNum">0</div>
+        <div class="lab">연속 학습일 · 최고 <span id="bestStreak">0</span>일</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <div class="card" id="taskCard">
+        <h2>📋 오늘의 출석 체크 <span class="pill" id="taskPill">0 / 7</span></h2>
+        <div id="taskList"></div>
+        <div class="progwrap">
+          <div class="bar"><i id="dayBar"></i></div>
+        </div>
+        <p class="muted" id="dayMsg" style="margin:10px 0 0"></p>
+      </div>
+
+      <div class="card">
+        <h2>🏆 연속 달성 마일스톤</h2>
+        <div class="mstones" id="msRow"></div>
+        <div class="nextms" id="nextMs"></div>
+      </div>
+
+      <div class="card">
+        <h2>📅 주간 출석 기록 <span class="pill">최근 8주</span></h2>
+        <div class="hmhead"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+        <div class="hm" id="heatmap"></div>
+        <p class="muted" style="margin:10px 0 0">🟩 전체완료 · 🟢 일부 · ⬜ 미완료/예정 · 월요일은 휴식일</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>🌤️ 실시간 날씨 <span class="pill" id="wxLoc">위치 확인중…</span></h2>
+        <div id="wxBody"><div class="loading">현재 위치 기반 날씨를 불러오는 중…</div></div>
+        <div style="margin-top:10px"><button class="btn" id="wxManual">📍 도시 직접 입력</button></div>
+      </div>
+
+      <div class="card">
+        <h2>⚾ Phillies 경기 <span class="pill">실시간</span></h2>
+        <div id="gameBody"><div class="loading">필라델피아 필리스 경기 정보를 불러오는 중…</div></div>
+      </div>
+
+      <div class="card">
+        <h2>🦅 Bryce Harper</h2>
+        <div id="harperBody"><div class="loading">하퍼 성적을 불러오는 중…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    데이터: Open-Meteo(날씨) · MLB Stats API(야구) · 기록은 이 브라우저에 저장됩니다 ·
+    <button class="btn" id="resetBtn" style="font-size:11px;padding:3px 8px">기록 초기화</button>
+  </div>
+</div>
+
+<div class="modal" id="msModal">
+  <div class="modalbox">
+    <div class="em" id="msEmoji">🎉</div>
+    <h3 id="msTitle">마일스톤 달성!</h3>
+    <p id="msText"></p>
+    <button class="btn go" onclick="document.getElementById('msModal').classList.remove('show')">계속 가자! 💪</button>
+  </div>
+</div>
+
+<script>
+const TASKS = [
+  {id:"lib",  emoji:"📍", name:"도서관 도착", sub:"오전 7:00 – 7:30"},
+  {id:"math", emoji:"➗", name:"수학", sub:"1교시 · 6시간"},
+  {id:"kor",  emoji:"📖", name:"국어", sub:"2교시"},
+  {id:"ethic",emoji:"⚖️", name:"생활과 윤리", sub:"3교시"},
+  {id:"engw", emoji:"🔤", name:"영어 단어 암기", sub:"4교시 · 2일치 분량"},
+  {id:"soc",  emoji:"🌐", name:"사회·문화", sub:"5교시"},
+  {id:"rev",  emoji:"🔁", name:"전 과목 복습", sub:"오늘 공부한 모든 과목"},
+];
+const MILESTONES = [3,7,14,30,50,100];
+const MS_EMOJI = {3:"🌱",7:"⭐",14:"🔥",30:"🏅",50:"💎",100:"👑"};
+const MS_NAME  = {3:"새싹",7:"한 주 완성",14:"2주 불꽃",30:"한 달 마스터",50:"하프 센추리",100:"센추리 클럽"};
+const PHILLIES_ID = 143;
+const HARPER_ID = 547180;
+const LS = "study_dash_v1";
+
+function load(){ try{return JSON.parse(localStorage.getItem(LS))||{}}catch(e){return {}} }
+function save(d){ localStorage.setItem(LS, JSON.stringify(d)); }
+let store = load();
+if(!store.days) store.days = {};
+if(!store.celebrated) store.celebrated = [];
+if(!store.best) store.best = 0;
+
+function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function isMonday(d){ return d.getDay()===1; }
+const today = new Date();
+const todayKey = ymd(today);
+
+function dayComplete(key){
+  const r = store.days[key]; if(!r) return false;
+  return TASKS.every(t=>r[t.id]);
+}
+function dayCount(key){
+  const r = store.days[key]||{}; return TASKS.filter(t=>r[t.id]).length;
+}
+
+function calcStreak(){
+  let streak=0; let d=new Date(today);
+  for(let i=0;i<400;i++){
+    const k=ymd(d);
+    if(isMonday(d)){ d.setDate(d.getDate()-1); continue; }
+    if(dayComplete(k)){ streak++; }
+    else { if(k===todayKey){ d.setDate(d.getDate()-1); continue; } break; }
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+
+const days=["일","월","화","수","목","금","토"];
+function renderHeader(){
+  const h=today.getHours();
+  let g = h<11?"좋은 아침이에요":h<17?"좋은 오후예요":"오늘도 수고했어요";
+  document.getElementById("greet").textContent = g+" 👋";
+  document.getElementById("datestr").textContent =
+    `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일 (${days[today.getDay()]})`
+    + (isMonday(today) ? " · 휴식일 🛌" : "");
+  const s=calcStreak();
+  if(s>store.best){store.best=s;save(store);}
+  document.getElementById("streakNum").textContent=s;
+  document.getElementById("bestStreak").textContent=store.best;
+}
+
+function renderTasks(){
+  const card=document.getElementById("taskCard");
+  const list=document.getElementById("taskList");
+  if(isMonday(today)){
+    card.querySelector("h2 .pill").textContent="휴식 🛌";
+    list.innerHTML=`<div class="restday"><div class="big">🛌 오늘은 휴식일</div>
+      <p>월요일은 쉬어가는 날이에요. 연속 기록은 끊기지 않으니 푹 쉬세요!</p></div>`;
+    document.getElementById("dayBar").style.width="100%";
+    document.getElementById("dayMsg").textContent="";
+    return;
+  }
+  const rec = store.days[todayKey] || (store.days[todayKey]={});
+  list.innerHTML="";
+  TASKS.forEach(t=>{
+    const done = !!rec[t.id];
+    const el=document.createElement("div");
+    el.className="task"+(done?" done":"");
+    el.innerHTML=`<div class="box">${done?"✓":""}</div>
+      <span class="emoji">${t.emoji}</span>
+      <div class="t"><div class="name">${t.name}</div><div class="sub">${t.sub}</div></div>`;
+    el.onclick=()=>{ rec[t.id]=!rec[t.id]; save(store); afterToggle(); };
+    list.appendChild(el);
+  });
+  const n=dayCount(todayKey);
+  card.querySelector("h2 .pill").textContent=`${n} / 7`;
+  document.getElementById("dayBar").style.width=(n/7*100)+"%";
+  const msg=document.getElementById("dayMsg");
+  if(n===7) msg.innerHTML="🎉 <b>오늘 과제 전부 완료!</b> 스트릭 +1 — 정말 잘했어요.";
+  else if(n===0) msg.textContent="첫 과제를 체크하며 하루를 시작해볼까요?";
+  else msg.textContent=`${7-n}개 남았어요. 끝까지 화이팅!`;
+}
+
+function afterToggle(){
+  renderHeader(); renderTasks(); renderMilestones(); renderHeatmap();
+  checkMilestone();
+}
+
+function renderMilestones(){
+  const s=calcStreak();
+  const row=document.getElementById("msRow"); row.innerHTML="";
+  MILESTONES.forEach(m=>{
+    const hit=s>=m;
+    const el=document.createElement("div");
+    el.className="ms"+(hit?" hit":"");
+    el.innerHTML=`<div style="font-size:18px">${MS_EMOJI[m]}</div>
+      <div class="d">${m}</div><div class="l">${MS_NAME[m]}</div>`;
+    row.appendChild(el);
+  });
+  const next=MILESTONES.find(m=>m>s);
+  const nx=document.getElementById("nextMs");
+  if(next) nx.innerHTML=`다음 목표 <b>${next}일</b>까지 <b>${next-s}일</b> 남았어요 ${MS_EMOJI[next]}`;
+  else nx.innerHTML="🎊 모든 마일스톤 달성! 당신은 전설입니다.";
+}
+
+function checkMilestone(){
+  const s=calcStreak();
+  if(MILESTONES.includes(s) && !store.celebrated.includes(s) && dayComplete(todayKey)){
+    store.celebrated.push(s); save(store);
+    celebrate(s);
+  }
+}
+
+function renderHeatmap(){
+  const hm=document.getElementById("heatmap"); hm.innerHTML="";
+  const base=new Date(today);
+  const off=(base.getDay()+6)%7;
+  base.setDate(base.getDate()-off);
+  const rows=[];
+  for(let w=7;w>=0;w--){
+    const monday=new Date(base); monday.setDate(base.getDate()-w*7);
+    const row=document.createElement("div"); row.className="hmrow";
+    const lbl=document.createElement("span"); lbl.className="wk";
+    lbl.textContent=`${monday.getMonth()+1}/${monday.getDate()}`;
+    row.appendChild(lbl);
+    for(let dd=0;dd<7;dd++){
+      const cur=new Date(monday); cur.setDate(monday.getDate()+dd);
+      const k=ymd(cur);
+      const cell=document.createElement("div"); cell.className="cell";
+      const future = cur>today && k!==todayKey;
+      if(dd===0){ cell.className+=" rest"; cell.textContent="🛌"; }
+      else if(future){ cell.textContent=""; }
+      else if(dayComplete(k)){ cell.className+=" full"; cell.textContent="✓"; }
+      else if(dayCount(k)>0){ cell.className+=" part"; cell.textContent=dayCount(k); }
+      if(k===todayKey) cell.className+=" today";
+      cell.title=k;
+      row.appendChild(cell);
+    }
+    rows.push(row);
+  }
+  rows.forEach(r=>hm.appendChild(r));
+}
+
+function celebrate(m){
+  document.getElementById("msEmoji").textContent=MS_EMOJI[m];
+  document.getElementById("msTitle").textContent=`${m}일 연속 달성! ${MS_NAME[m]}`;
+  document.getElementById("msText").textContent=`${m}일 동안 꾸준히 해냈어요. 이 기세 그대로 가봅시다!`;
+  document.getElementById("msModal").classList.add("show");
+  confettiBurst();
+}
+function confettiBurst(){
+  const cv=document.getElementById("confetti"); const ctx=cv.getContext("2d");
+  cv.width=innerWidth; cv.height=innerHeight;
+  const cols=["#E81828","#002D72","#f5a623","#1d9e6a","#9b59d0"];
+  let parts=[];
+  for(let i=0;i<160;i++) parts.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.4,
+    r:4+Math.random()*6,c:cols[i%cols.length],vy:2+Math.random()*4,vx:-2+Math.random()*4,rot:Math.random()*6});
+  let t=0;
+  (function anim(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(p=>{ p.y+=p.vy;p.x+=p.vx;p.rot+=.1;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+      ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.6);ctx.restore(); });
+    t++; if(t<160) requestAnimationFrame(anim); else ctx.clearRect(0,0,cv.width,cv.height);
+  })();
+}
+
+const WCODE={0:["맑음","☀️"],1:["대체로 맑음","🌤️"],2:["구름 조금","⛅"],3:["흐림","☁️"],
+  45:["안개","🌫️"],48:["서리 안개","🌫️"],51:["약한 이슬비","🌦️"],53:["이슬비","🌦️"],55:["강한 이슬비","🌧️"],
+  61:["약한 비","🌧️"],63:["비","🌧️"],65:["강한 비","🌧️"],71:["약한 눈","🌨️"],73:["눈","🌨️"],75:["강한 눈","❄️"],
+  80:["소나기","🌦️"],81:["소나기","🌧️"],82:["강한 소나기","⛈️"],95:["뇌우","⛈️"],96:["우박 뇌우","⛈️"],99:["우박 뇌우","⛈️"]};
+function wdesc(c){return WCODE[c]||["—","🌡️"];}
+
+async function loadWeather(lat,lon,label){
+  const wxLoc=document.getElementById("wxLoc"); const body=document.getElementById("wxBody");
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`+
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1`;
+    const r=await fetch(u); const d=await r.json();
+    const c=d.current, dy=d.daily; const [desc,ic]=wdesc(c.weather_code);
+    if(label) wxLoc.textContent=label;
+    body.innerHTML=`<div class="wx">
+        <div class="ico">${ic}</div>
+        <div><div class="temp">${Math.round(c.temperature_2m)}°</div>
+        <div class="meta">${desc} · 체감 ${Math.round(c.apparent_temperature)}°</div></div></div>
+      <div class="wxgrid">
+        <div>최고/최저<b>${Math.round(dy.temperature_2m_max[0])}° / ${Math.round(dy.temperature_2m_min[0])}°</b></div>
+        <div>강수확률<b>${dy.precipitation_probability_max[0]??0}%</b></div>
+        <div>습도<b>${c.relative_humidity_2m}%</b></div>
+      </div>
+      <p class="muted" style="margin:10px 0 0">💡 ${dy.precipitation_probability_max[0]>=50?"우산 챙기세요! ☔":"도서관 가기 좋은 날이에요 📚"}</p>`;
+  }catch(e){ body.innerHTML=`<div class="err">날씨를 불러오지 못했어요. 잠시 후 새로고침해 주세요.</div>`; }
+}
+async function cityWeather(name){
+  try{
+    const g=await(await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=ko`)).json();
+    if(!g.results||!g.results.length){ alert("도시를 찾지 못했어요."); return; }
+    const c=g.results[0];
+    loadWeather(c.latitude,c.longitude,(c.name||name));
+  }catch(e){ alert("도시 검색 실패"); }
+}
+function initWeather(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const {latitude,longitude}=pos.coords;
+      let label="현재 위치";
+      try{
+        const rg=await(await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=ko`)).json();
+        label=rg.city||rg.locality||rg.principalSubdivision||"현재 위치";
+      }catch(e){}
+      loadWeather(latitude,longitude,label);
+    }, err=>{
+      document.getElementById("wxLoc").textContent="위치 거부됨";
+      document.getElementById("wxBody").innerHTML=`<div class="muted">위치 권한이 없어요. 아래 버튼으로 도시를 입력하면 날씨를 볼 수 있어요.</div>`;
+    }, {timeout:10000});
+  } else {
+    document.getElementById("wxBody").innerHTML=`<div class="muted">이 브라우저는 위치를 지원하지 않아요. 도시를 직접 입력해 주세요.</div>`;
+  }
+}
+document.getElementById("wxManual").onclick=()=>{
+  const c=prompt("도시 이름을 입력하세요 (예: Seoul, 부산, New York)");
+  if(c) cityWeather(c.trim());
+};
+
+const API="https://statsapi.mlb.com/api/v1";
+function fmtKST(iso){
+  try{ return new Date(iso).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}); }
+  catch(e){ return iso; }
+}
+async function loadBaseball(){
+  const gb=document.getElementById("gameBody");
+  const d0=new Date(today); d0.setDate(d0.getDate()-1);
+  const d2=new Date(today); d2.setDate(d2.getDate()+1);
+  const start=ymd(d0), end=ymd(d2);
+  let game=null, gamePk=null;
+  try{
+    const u=`${API}/schedule?sportId=1&teamId=${PHILLIES_ID}&startDate=${start}&endDate=${end}`+
+            `&hydrate=team,linescore,probablePitcher`;
+    const sc=await(await fetch(u)).json();
+    let games=[];
+    (sc.dates||[]).forEach(dt=>games=games.concat(dt.games||[]));
+    if(games.length){
+      const live=games.find(g=>g.status.abstractGameState==="Live");
+      const future=games.filter(g=>g.status.abstractGameState==="Preview").sort((a,b)=>new Date(a.gameDate)-new Date(b.gameDate))[0];
+      const past=games.filter(g=>g.status.abstractGameState==="Final").sort((a,b)=>new Date(b.gameDate)-new Date(a.gameDate))[0];
+      game=live||future||past;
+    }
+    if(!game){ gb.innerHTML=`<div class="muted">최근 일정에 필리스 경기가 없어요. (비시즌이거나 휴식일)</div>`;
+               loadHarperSeason(); return; }
+    gamePk=game.gamePk;
+    const home=game.teams.home, away=game.teams.away;
+    const st=game.status.abstractGameState;
+    const ls=game.linescore||{};
+    let badge = st==="Live"?`<span class="badge live">● LIVE ${ls.inningHalf?("· "+ls.inningHalf+" "+(ls.currentInningOrdinal||"")):""}</span>`
+              : st==="Final"?`<span class="badge">경기 종료</span>`
+              : `<span class="badge">${fmtKST(game.gameDate)} 시작</span>`;
+    const hs = (st==="Preview")?"–":(home.score??0);
+    const as = (st==="Preview")?"–":(away.score??0);
+    gb.innerHTML=`<div class="game">
+        <div class="team"><div class="ab">${away.team.abbreviation||away.team.name}${away.team.id===PHILLIES_ID?" 🦅":""}</div><div class="sc">${as}</div></div>
+        <div class="gstatus">${badge}</div>
+        <div class="team"><div class="ab">${home.team.abbreviation||home.team.name}${home.team.id===PHILLIES_ID?" 🦅":""}</div><div class="sc">${hs}</div></div>
+      </div>
+      <p class="muted" style="margin:10px 0 0;text-align:center">
+        ${st==="Final" ? resultMsg(game) : (st==="Live"?"필리스 경기 진행 중! ⚾":"다음 경기 예정")}
+      </p>`;
+    if(st==="Live"||st==="Final") loadHarperGame(gamePk);
+    loadHarperSeason();
+  }catch(e){
+    gb.innerHTML=`<div class="err">경기 정보를 불러오지 못했어요.</div>`; loadHarperSeason();
+  }
+}
+function resultMsg(game){
+  const h=game.teams.home,a=game.teams.away;
+  const ph = h.team.id===PHILLIES_ID?h:a; const opp= h.team.id===PHILLIES_ID?a:h;
+  if(ph.isWinner) return "필리스 승리! 🎉";
+  if(opp.isWinner) return "아쉬운 패배… 다음 경기 기대해요";
+  return "경기 종료";
+}
+
+async function loadHarperGame(gamePk){
+  try{
+    const bs=await(await fetch(`https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`)).json();
+    const t=bs.liveData.boxscore.teams;
+    let p = t.home.players["ID"+HARPER_ID] || t.away.players["ID"+HARPER_ID];
+    if(!p || !p.stats || !p.stats.batting || p.stats.batting.atBats===undefined){ return; }
+    const b=p.stats.batting;
+    const card=document.getElementById("harperBody");
+    const line=`${b.atBats}타수 ${b.hits}안타`+
+      (b.homeRuns?` · ${b.homeRuns}홈런`:"")+(b.rbi?` · ${b.rbi}타점`:"")+
+      (b.baseOnBalls?` · ${b.baseOnBalls}볼넷`:"")+(b.strikeOuts?` · ${b.strikeOuts}삼진`:"");
+    const banner=document.createElement("div");
+    banner.className="today-line";
+    banner.innerHTML=`<b>오늘 경기</b> · ${line}`;
+    card.prepend(banner);
+  }catch(e){}
+}
+
+async function loadHarperSeason(){
+  const body=document.getElementById("harperBody");
+  const yr=today.getFullYear();
+  async function fetchSeason(season){
+    const u=`${API}/people/${HARPER_ID}/stats?stats=season&season=${season}&group=hitting`;
+    const d=await(await fetch(u)).json();
+    const sp=d.stats&&d.stats[0]&&d.stats[0].splits&&d.stats[0].splits[0];
+    return sp?sp.stat:null;
+  }
+  try{
+    let s=await fetchSeason(yr); let usedYr=yr;
+    if(!s){ s=await fetchSeason(yr-1); usedYr=yr-1; }
+    if(!s){ body.innerHTML=`<div class="muted">시즌 성적을 찾지 못했어요.</div>`; return; }
+    body.innerHTML += `
+      <div class="muted" style="margin:2px 0 8px">${usedYr} 시즌 · 타격</div>
+      <div class="statline">
+        <div><div class="v">${s.avg??"-"}</div><div class="k">타율</div></div>
+        <div><div class="v">${s.homeRuns??0}</div><div class="k">홈런</div></div>
+        <div><div class="v">${s.rbi??0}</div><div class="k">타점</div></div>
+        <div><div class="v">${s.ops??"-"}</div><div class="k">OPS</div></div>
+        <div><div class="v">${s.hits??0}</div><div class="k">안타</div></div>
+      </div>
+      <div class="statline" style="margin-top:7px">
+        <div><div class="v">${s.runs??0}</div><div class="k">득점</div></div>
+        <div><div class="v">${s.stolenBases??0}</div><div class="k">도루</div></div>
+        <div><div class="v">${s.baseOnBalls??0}</div><div class="k">볼넷</div></div>
+        <div><div class="v">${s.obp??"-"}</div><div class="k">출루율</div></div>
+        <div><div class="v">${s.slg??"-"}</div><div class="k">장타율</div></div>
+      </div>`;
+  }catch(e){ body.innerHTML=`<div class="err">하퍼 시즌 성적을 불러오지 못했어요.</div>`; }
+}
+
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("모든 출석 기록과 스트릭을 지울까요? 되돌릴 수 없어요.")){
+    localStorage.removeItem(LS); location.reload();
+  }
+};
+
+renderHeader(); renderTasks(); renderMilestones(); renderHeatmap();
+initWeather(); loadBaseball();
+</script>
+</body>
+</html>
